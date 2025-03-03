@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ashtothram Game</title>
+    </head>
+    <style>
+        /* General Styles */
+        * {
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+                "Lucida Sans", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        p {
+            text-align: center;
+            color: #777;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        /* Filter Styles */
+        #filter {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        select {
+            margin-right: 8px;
+            padding: 10px;
+            width: 100px;
+            border: none;
+            border: 1px solid rgb(6, 0, 116);
+            border-radius: 16px;
+            background-color: #eaf7ff;
+            color: rgb(0, 2, 61);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none; /* Remove default arrow */
+            --webkit-appearance: none; /* Remove default arrow for safari */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300023d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 4px top 50%;
+            background-size: 16px;
+        }
+
+        select:hover {
+            border: 1px solid #3498db;
+            outline: none;
+        }
+
+        /* Game Container Styles */
+        #game {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 600px; /* Adjust as needed */
+        }
+
+        .ashtothram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: medium;
+            color: #333;
+            cursor: grab;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #ddd;
+        }
+
+        .ashtothram:hover {
+            background-color: #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .ashtothram svg {
+            fill: #777;
+        }
+
+        /* Sortable Styles */
+        .on_swap {
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 8px 32px 0px;
+            border: 2px solid #3498db;
+            background-color: #eaf2ff;
+        }
+
+        .ghost {
+            opacity: 0.7;
+            background: #c0c0c0;
+        }
+
+        button {
+            padding: 8px;
+            border: none;
+            border-radius: 16px;
+            border: 1px solid rgb(6, 0, 116);
+            background-color: #eaf7ff;
+            color: rgb(0, 2, 61);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease-in;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            border-radius: 32px;
+            border: 1px solid #3498db;
+        }
+    </style>
+
+    <body>
+        <h1>Ashtothram Ordering Game</h1>
+        <p>
+            Arrange the Ashtothram in the correct order. Click on the Ashtothram
+            to select and drag it to the correct position.
+        </p>
+
+        <div id="filter"></div>
+
+        <div id="game"></div>
+
+        <button
+            style="
+                margin-top: 16px;
+                padding: 8px 16px;
+                font-size: 20px;
+                border-radius: 32px;
+                background-color: rgb(225, 255, 225);
+                color: rgb(0, 45, 0);
+                border: 1px solid rgb(0, 45, 0);
+            "
+            onclick="validate()"
+        >
+            <svg
+                width="24"
+                height="24"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                />
+            </svg>
+            <div style="margin-left: 8px">Validate</div>
+        </button>
+    </body>
+    <!--Very Important. Without this script the game will not work. Please include this without fail!-->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+
+    <script>
+        const ashtothram = [
+            "OM SRI SAI SATHYA SAI BABAYA NAMAH.",
+            "OM SRI SAI SATHYASWAROOPAAYA NAMAH.",
+            "OM SRI SAI SATHYADHARMAPARAYANAAYA NAMAH.",
+            "OM SRI SAI VARADAAYA NAMAH.",
+            "OM SRI SAI SATHPURUSHAAYA NAMAH.",
+            "OM SRI SAI SATHYA GUNNATHMANE NAMAH",
+            "OM SRI SAI SADHUVARDHANAAYA NAMAH",
+            "OM SRI SAI SADHUJANA POSHANAAYA NAMAH",
+            "OM SRI SAI SARVAJNAAYA NAMAH",
+            "OM SRI SAI SARVA JANA PRIYAAYA NAMAH.",
+            "OM SRI SAI SARVA SAKTHI MOOTHAYE NAMAH.",
+            "OM SRI SAI SARVESAAYA NAMAH.",
+            "OM SRI SAI SARVA SANGA PARITHYAAGINE NAMAH.",
+            "OM SRI SAI SARVA ANTHARYAAMINAE NAMAH",
+            "OM SRI SAI MAHIMAATMANE NAMAH.",
+            "OM SRI SAI MAHESWARA SWAROOPAAYA NAMAH.",
+            "OM SRI SAI PARTHI GRAMODBHAVAAYA NAMAH.",
+            "OM SRI SAI PARTHI KSHETRA NIVAASINE NAMAH.",
+            "OM SRI SAI YASAHKAAYA SHIRDI VAASINE NAMAH.",
+            "OM SRI SAI JODI AADIPALLI SOMAPPAAYA NAMAH",
+            "OM SRI SAI BHARADWAJA RISHI GOTHRAAYA NAMAH.",
+            "OM SRI SAI BHAKTA VATHSALAAYA NAMAH",
+            "OM SRI SAI APAANTHARAATHMANE NAMAH",
+            "OM SRI SAI AVATHAARA MOORTHAYE NAMAH.",
+            "OM SRI SAI SARVA BHAYA NIVAARINE NAMAH.",
+            "OM SRI SAI AAPASTHAMBA SUTHRAAYA NAMAH.",
+            "OM SRI SAI ABHAYAPRADAAYA NAMAH.",
+            "OM SRI SAI RATNAAKARA VAMSODBHAVAAYA NAMAH.",
+            "OM SRI SAI  SHIRDI SAAYI ABHEDA SAKTHYAAVATHAARAAYA NAMAH.",
+            "OM SRI SAI SAMKARAAYA NAMAH.",
+            "OM SRI SAI SHIRDI SAI MOORTHAYE NAMAH.",
+            "OM SRI SAI DWAARAKAMAAYI VAASINE NAMAH.",
+            "OM SRI SAI CHITRAAVATHEE THATA PUTTAPARTHI VIHAARINE NAMAH.",
+            "OM SRI SAI SAKTHI PRADAAYA NAMAH.",
+            "OM SRI SAI SARANAAGATHA THRAANAAYA NAMAH.",
+            "OM SRI SAI ANANDAAYA NAMAH.",
+            "OM SRI SAI AANANDA DAAYA NAMAH.",
+            "OM SRI SAI AARTHA THRAANA PARAAYANAAYA NAMAH.",
+            "OM SRI SAI ANAATHA NAATHAAYA NAMAH.",
+            "OM SRI SAI ASAHAAYA SAHAAYAAYA NAMAH.",
+            "OM SRI SAI LOKA BAANDHAVAAYA NAMAH.",
+            "OM SRI SAI LOKARAKSHAA PARAAYANAAYA NAMAH.",
+            "OM SRI SAI LOKANAATHAYA NAMAH",
+            "OM SRI SAI DEENAJANA POSHANAAYA NAMAH.",
+            "OM SRI SAI MOORTHI THRAYA SWAROOPAYA NAMAH.",
+            "OM SRI SAI MUKTHI PRADAAYA NAMAH",
+            "OM SRI SAI KALUSHA VIDOORAAYA NAMAH.",
+            "OM SRI SAI KARUNAAKARAAYA NAMAH.",
+            "OM SRI SAI SARVAADHAARAAYA NAMAH.",
+            "OM SRI SAI HRUDAYAVASINE NAMAH",
+            "OM SRI SAI PUNYA PHALA PRADAAYA NAMAH",
+            "OM SRI SAI SARVA PAAPAKSHAYA KARAAYA NAMAH.",
+            "OM SRI SAI SARVA ROGA NIVAARINE NAMAH.",
+            "OM SRI SAI SARVA BAADHA HARAAYA NAMAH.",
+            "OM SRI SAI ANANTHA NUTHA KARTHRUNE NAMAH",
+            "OM SRI SAI AADI PURUSHAAYA NAMAH.",
+            "OM SRI SAI AADI SAKTHAYE NAMAH.",
+            "OM SRI SAI APAROOPA SAKTHINE NAMAH.",
+            "OM SRI SAI AVYAKTHA ROOPINE NAMAH.",
+            "OM SRI SAI KAAMAKRODHA DHWAMSINE NAMAH.",
+            "OM SRI SAI KANAKAAMBARA DHAARINE NAMAH.",
+            "OM SRI SAI ADBHUTHA CHARYAAYA NAMAH.",
+            "OM SRI SAI AAPADBAANDHAVAAYA NAMAH.",
+            "OM SRI SAI PREMAATMANE NAMAH.",
+            "OM SRI SAI PREMA MOORTHAYE NAMAH.",
+            "OM SRI SAI PREMA PRADAAYA NAMAH.",
+            "OM SRI SAI PRIYAAYA NAMAH.",
+            "OM SRI SAI BHAKTA PRIYAAYA NAMAH.",
+            "OM SRI SAI BHAKTHA MANDAARAAYA NAMAH",
+            "OM SRI SAI BHAKTHA JANA HRIDAYA VIHAARAAYA NAMAH.",
+            "OM SRI SAI BHAKTHAJANA HRUDAYAALAYAAYA NAMAH",
+            "OM SRI SAI BHAKTHA PARAADHEENAAYA NAMAH.",
+            "OM SRI SAI BHAKTHI JNANA PRADEEPAAYA NAMAH",
+            "OM SRI SAI BHAKTHI JNANA PRADAAYA NAMAH.",
+            "OM SRI SAI SUJNAANA MAARGADARSAKAAYA NAMAH",
+            "OM SRI SAI JNAANASWARUPAAYA NAMAH.",
+            "OM SRI SAI GITA BODHAKAAYA NAMAH.",
+            "OM SRI SAI JNANA SIDDHIDAAYA NAMAH.",
+            "OM SRI SAI SUNDARARUPAAYA NAMAH.",
+            "OM SRI SAI PUNYA PURUSHAAYA NAMAH.",
+            "OM SRI SAI PHALAPRADAAYA NAMAH.",
+            "OM SRI SAI PURUSHOTHAMAAYA NAMAH",
+            "OM SRI SAI PURAANA PURUSHAAYA NAMAH.",
+            "OM SRI SAI ATHEETHAAYA NAMAH",
+            "OM SRI SAI KAALAATHEETHAAYA NAMAH.",
+            "OM SRI SAI SIDDHIROOPAAYA NAMAH.",
+            "OM SRI SAI SIDDHA SANKALPAAYA NAMAH.",
+            "OM SRI SAI AAROGYA PRADAAYA NAMAH.",
+            "OM SRI SAI ANNAVASTRADAAYA NAMAH.",
+            "OM SRI SAI SAMSAARA DUKHASHAYAKARAAYA NAMAH.",
+            "OM SRI SAI SARVAABHEESTA PRADAAYA NAMAH.",
+            "OM SRI SAI KALYAANAGUNAAYA NAMAH",
+            "OM SRI SAI KARMADHWAMSINE NAMAH",
+            "OM SRI SAI SAADHU MAANASA SOBHITHAAYA NAMAH.",
+            "OM SRI SAI SARVAMATHA SAMMATHAAYA NAMAH",
+            "OM SRI SAI SAADHUMAANASA PARISODHAKAAYA NAMAH.",
+            "OM SRI SAI SADHAKAANUGRAHA VATA VRIKSHA PRATHISTHAAPAKAAYA NAMAH.",
+            "OM SRI SAI SAKALA SAMSAYA HARAAYA NAMAH",
+            "OM SRI SAI SAKALATHATHWA BODHAKAAYA NAMAH.",
+            "OM SRI SAI YOGISWARAAYA NAMAH",
+            "OM SRI SAI YOGINDRA VANDITHAAYA NAMAH.",
+            "OM SRI SAI SARVA MANGALA KAARAAYA NAMAH.",
+            "OM SRI SAI SARVA SIDDHI PRADAAYA NAMAH.",
+            "OM SRI SAI AAPANNIVARINE NAMAH.",
+            "OM SRI SAI AARTHIHARAAYA NAMAH.",
+            "OM SRI SAI SAANTHA MOORTHAYE NAMAH.",
+            "OM SRI SAI SULABHA PRASANNAAYA NAMAH.",
+            "OM SRI SAI BHAGAVAN SRI SATHYA SAI BAABAAYA NAMAH.",
+        ];
+
+        let sortable = null;
+
+        function toTitleCase(str) {
+            return str.replace(
+                /\w\S*/g,
+                (text) =>
+                    text.charAt(0).toUpperCase() +
+                    text.substring(1).toLowerCase()
+            );
+        }
+
+        function createGame(list) {
+            const game = document.getElementById("game");
+            game.innerHTML = "";
+            const gameContainer = document.createElement("div");
+            gameContainer.className = "game-container";
+            game.appendChild(gameContainer);
+
+            list.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.className = "ashtothram";
+                div.innerHTML =
+                    `<div>${toTitleCase(item.toString())}</div>` +
+                    ' <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>';
+                div.id = index;
+                gameContainer.appendChild(div);
+            });
+
+            sortable = new Sortable(gameContainer, {
+                animation: 150,
+                direction: "vertical",
+                easing: "cubic-bezier(1, 0, 0, 1)",
+                chosenClass: "on_swap",
+                ghostClass: "ghost",
+            });
+        }
+
+        function onRangeSelect() {
+            const range = document.getElementById("ranges").value;
+            const [start, end] = range.split("-").map(Number);
+            let filteredAshtothram = ashtothram.slice(start - 1, end);
+
+            // randomize
+            filteredAshtothram.sort(() => Math.random() - 0.5);
+
+            createGame(filteredAshtothram);
+        }
+
+        function pickRandomRange() {
+            const ranges = document.getElementById("ranges");
+            ranges.selectedIndex = Math.floor(Math.random() * ranges.length);
+            onRangeSelect();
+        }
+
+        function createRanges() {
+            let ranges = [];
+            for (let i = 0; i < 105; i += 5) {
+                ranges.push(`${i + 1}-${i + 5}`);
+            }
+            ranges.push(`103-108`);
+
+            const select = document.createElement("select");
+            select.id = "ranges";
+            select.onchange = onRangeSelect;
+            document.getElementById("filter").appendChild(select);
+
+            ranges.forEach((range, index) => {
+                const option = document.createElement("option");
+                option.value = range;
+                option.text = range;
+                select.appendChild(option);
+            });
+
+            const randomButton = document.createElement("button");
+            randomButton.innerHTML = `<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" clip-rule="evenodd"><path d="M21.67 3.955l-2.825-2.202.665-.753 4.478 3.497-4.474 3.503-.665-.753 2.942-2.292h-4.162c-3.547.043-5.202 3.405-6.913 7.023 1.711 3.617 3.366 6.979 6.913 7.022h4.099l-2.883-2.247.665-.753 4.478 3.497-4.474 3.503-.665-.753 2.884-2.247h-4.11c-3.896-.048-5.784-3.369-7.461-6.858-1.687 3.51-3.592 6.842-7.539 6.858h-2.623v-1h2.621c3.6-.014 5.268-3.387 6.988-7.022-1.72-3.636-3.388-7.009-6.988-7.023h-2.621v-1h2.623c3.947.016 5.852 3.348 7.539 6.858 1.677-3.489 3.565-6.81 7.461-6.858h4.047z"/></svg><div style="margin-left: 8px;">Pick Random</div>`;
+            randomButton.onclick = pickRandomRange;
+            document.getElementById("filter").appendChild(randomButton);
+        }
+
+        function validate() {
+            let currentOrder = document.querySelectorAll(".ashtothram");
+            let correctOrder = ashtothram.slice(0, currentOrder.length);
+
+            let isCorrect = true;
+            currentOrder.forEach((item, index) => {
+                console.log(item.querySelector("div").innerText);
+                if (
+                    item.querySelector("div").innerText.toLowerCase() !==
+                    correctOrder[index].toLowerCase()
+                ) {
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect) {
+                alert(
+                    "Congratulations! You have sorted the Ashtothram correctly!"
+                );
+            } else {
+                alert(
+                    "Sorry! The Ashtothram is not sorted correctly. Please try again!"
+                );
+            }
+        }
+
+        createRanges();
+        pickRandomRange();
+    </script>
+</html>
