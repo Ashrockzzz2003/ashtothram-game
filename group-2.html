@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Ashtothram Game - Group 1</title>
+        <title>Ashtothram Game - Group 2</title>
     </head>
     <style>
         /* General Styles */
@@ -355,10 +355,10 @@
 
         function createRanges() {
             let ranges = [];
-            for (let i = 0; i < 105; i += 5) {
-                ranges.push(`${i + 1}-${i + 5}`);
+            for (let i = 0; i < 100; i += 10) {
+                ranges.push(`${i + 1}-${i + 10}`);
             }
-            ranges.push(`103-108`);
+            ranges.push("100-108");
 
             const select = document.createElement("select");
             select.id = "ranges";

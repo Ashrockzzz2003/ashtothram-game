@@ -8,7 +8,5 @@ This is a game that helps you to learn the [Sathya Sai Baba Ashtothram](https://
 
 ![image](https://github.com/user-attachments/assets/a591e756-3ce9-450b-9de9-b3a4122ba881)
 
-
-
 Created by - `Ashwin Narayanan S`
 
