@@ -290,7 +290,7 @@
             "OM SRI SAI SAKALATHATHWA BODHAKAAYA NAMAH.",
             "OM SRI SAI YOGISWARAAYA NAMAH",
             "OM SRI SAI YOGINDRA VANDITHAAYA NAMAH.",
-            "OM SRI SAI SARVA MANGALA KAARAAYA NAMAH.",
+            "OM SRI SAI SARVA MANGALAKARAYA NAMAH.",
             "OM SRI SAI SARVA SIDDHI PRADAAYA NAMAH.",
             "OM SRI SAI AAPANNIVARINE NAMAH.",
             "OM SRI SAI AARTHIHARAAYA NAMAH.",
@@ -380,15 +380,21 @@
 
         function validate() {
             let currentOrder = document.querySelectorAll(".ashtothram");
-            let correctOrder = ashtothram.slice(0, currentOrder.length);
+            // Get the range
+            const range = document.getElementById("ranges").value;
+            const [start, end] = range.split("-").map(Number);
+            let correctOrder = ashtothram.slice(start - 1, end);
+
+            // console.log(currentOrder);
+            // console.log(correctOrder);
 
             let isCorrect = true;
             currentOrder.forEach((item, index) => {
-                console.log(item.querySelector("div").innerText);
                 if (
                     item.querySelector("div").innerText.toLowerCase() !==
                     correctOrder[index].toLowerCase()
                 ) {
+                    // console.log(`Incorrect: ${item.querySelector("div").innerText.toLowerCase()} == ${correctOrder[index].toLowerCase()}`);
                     isCorrect = false;
                 }
             });
